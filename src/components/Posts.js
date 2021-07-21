@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
-import PostDetail from './PostDetail';
+import { Link } from 'react-router-dom';
 
 
-const Posts = () => {
+const Posts = ({ data, setData }) => {
     const [searchTerm, setSearchTerm] = useState("");
-    const [data, setData] = useState([]);
+    const [sortTitle, setSortTitle] = useState(`Title -- NONE`);
+    const original = data;
 
     useEffect(() => {
         async function fetchData() {
@@ -17,42 +17,66 @@ const Posts = () => {
         fetchData();
     });
 
+    const handleSort = () => {
+        if (sortTitle === 'Title -- NONE') {
+            setSortTitle(sortTitle => 'Title -- ASC');
+        }
+        if (sortTitle === 'Title -- ASC') {
+            setSortTitle(sortTitle => 'Title -- DESC');
+        }
+        if (sortTitle === 'Title -- DESC') {
+            setSortTitle(sortTitle => 'Title -- NONE');
+        }
+    }
+
+    const getSortedData = (sortTitle) => {
+        if (sortTitle === 'Title -- NONE') {
+            return original;
+        }
+        if (sortTitle === 'Title -- ASC') {
+            return data.sort((post1, post2) => {
+                if (post1.title < post2.title) return -1;
+                if (post1.title > post2.title) return 1;
+                return 0;
+            });
+        }
+        if (sortTitle === 'Title -- DESC') {
+            return data.sort((post1, post2) => {
+                if (post1.title > post2.title) return -1;
+                if (post1.title < post2.title) return 1;
+                return 0;
+            });
+        }
+    }
+
+    const sorted = getSortedData(sortTitle);
+
     return (
         <div>
-            <h2>Posts</h2>
-
             <input id="title" type="text" placeholder="Search by title..." onChange={(e) => setSearchTerm(e.target.value)} />
             <br />
             <table className="table table-bordered mt-2">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Actions</th>
+                        <th style={{width: '5%'}}>ID</th>
+                        <th onClick={handleSort}>{sortTitle}</th>
+                        <th style={{width: '15%'}}>Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {data
+                    {sorted
                         .filter(ele => ele.title.includes(searchTerm))
                         .map(ele =>
                             <tr key={ele.id}>
-                                <td>{ele.id}</td>
-                                <td>{ele.title}</td>
+                                <td><span>{ele.id}</span></td>
+                                <td><p>{ele.title}</p></td>
                                 <td>
-                                    <BrowserRouter>
-                                        <Link to={"/posts/" + ele.id} >
-                                            View Detail
-                                        </Link>
-                                        <Switch>
-                                            <Route path={"/posts/" + ele.id}>
-                                                <PostDetail id={ele.id} title={ele.title} body={ele.body} />
-                                            </Route>
-                                        </Switch>
-                                    </BrowserRouter>
+                                    <Link to={"/detail/" + ele.id} >View Detail</Link>
                                 </td>
                             </tr>
-                        )}
+                        )
+                    }
                 </tbody>
             </table>
         </div>

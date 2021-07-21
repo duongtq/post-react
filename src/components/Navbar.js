@@ -1,16 +1,34 @@
-import React from "react";
+import React, { useState }from "react";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import Home from "./Home";
 import Posts from "./Posts";
 import Profile from "./Profile";
 import Login from "./Login";
+import PostDetail from './PostDetail';
+
 
 const Navbar = ({ currentUser, setCurrentUser }) => {
-    const renderLoginOrLogout = (currentUser) => {
-        if (!(currentUser.token && currentUser.userId)) {
-            return "Login";
+    
+    const [action, setAction] = useState("Login");
+
+    const [data, setData] = useState([]);
+
+    const onClickHandler = () => {
+        if (action === "Logout") {
+            setAction(action => "Login");
+            setCurrentUser({
+                token: null,
+                userId: null
+            });
         }
-        return "Logout";
+    }
+
+    const renderLoginLogout = () => {
+        if (action === "Login") {
+            return <Login currentUser={currentUser} setCurrentUser={setCurrentUser} action={action} setAction={setAction} />
+        } else {
+            return <h3>Login Successfully</h3>
+        }
     }
 
     return (
@@ -27,8 +45,8 @@ const Navbar = ({ currentUser, setCurrentUser }) => {
                         <li>
                             <Link to="/profile">Profile</Link>
                         </li>
-                        <li>
-                            <Link to="/login">{renderLoginOrLogout(currentUser)}</Link>
+                        <li onClick={onClickHandler}>
+                            <Link to="/login">{action}</Link>
                         </li>
                     </ul>
                 </nav>
@@ -38,14 +56,17 @@ const Navbar = ({ currentUser, setCurrentUser }) => {
                         <Home />
                     </Route>
                     <Route path="/posts">
-                        <Posts />
+                        <Posts data={data} setData={setData}/>
                     </Route>
                     <Route path="/profile">
-                        <Profile currentUser={currentUser} />
+                        <Profile currentUser={currentUser} setCurrentUser={setCurrentUser} action={action} setAction={setAction} />
                     </Route>
                     <Route path="/login">
-                        <Login currentUser={currentUser} setCurrentUser={setCurrentUser} />
-                    </Route>                        
+                        {renderLoginLogout()}
+                    </Route>
+                    <Route path="/detail/:id">
+                        <PostDetail posts={data} /> 
+                    </Route>                      
                 </Switch>
             </div>
         </BrowserRouter>

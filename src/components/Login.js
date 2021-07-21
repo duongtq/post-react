@@ -1,11 +1,10 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import axios from 'axios';
-const Login = ({ currentUser, setCurrentUser }) => {
+const Login = ({ currentUser, setCurrentUser, action, setAction }) => {
     
     return (
     <div>
-        <h1>Login</h1>
         <Formik
             initialValues={{ email: '', password: '' }}
             validate={values => {
@@ -19,24 +18,19 @@ const Login = ({ currentUser, setCurrentUser }) => {
                 if (!values.password) {
                     errors.password = 'Required';
                 } else if (values.password.length < 8) {
-                    errors.password = 'Password length must be at least 8 charecters';
+                    errors.password = 'Password length must be at least 8 characters';
                 }
-
                 return errors;
             }}
 
             onSubmit={(values, { setSubmitting }) => {
-                setTimeout(() => {
-                    alert(JSON.stringify(values, null, 2));
-                    setSubmitting(false);
-                }, 400);
-                
                 axios.get('https://60dff0ba6b689e001788c858.mockapi.io/token')
                 .then(response => {
                     setCurrentUser({
                         token: response.data.token,
                         userId: response.data.userId
                     });
+                    setAction(action => "Logout");
                 })
                 .catch(err => {
                     console.log("Error fetching posts: ", err.message);
@@ -46,10 +40,10 @@ const Login = ({ currentUser, setCurrentUser }) => {
             {({ isSubmitting }) => (
                 <Form>
                     <Field className="mb-2" type="email" name="email" placeholder="Email"/>
-                    <ErrorMessage className="ml-2" name="email" /><br/>
+                    <ErrorMessage name="email" /><br/>
                     <Field className="mb-2" type="password" name="password" placeholder="Password"/>
-                    <ErrorMessage className="ml-2" name="password" /><br/>
-                    <button type="submit" disabled={isSubmitting} >Submit</button>
+                    <ErrorMessage name="password" /><br/>
+                    <button className="btn btn-primary btn-small" type="submit" disabled={isSubmitting} >Submit</button>
                 </Form>
             )}
         </Formik>
